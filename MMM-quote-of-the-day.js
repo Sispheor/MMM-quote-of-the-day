@@ -1,12 +1,25 @@
 
 Module.register('MMM-quote-of-the-day',{
+
+    // Default module config.
+	defaults: {
+        language: "en",
+        updateInterval: 86400, // one day by default
+    },
+
     result: {},
 
     start: function() {
 
         console.log("Starting module: " + this.name);
         quote_api_url = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en"
-        this.sendSocketNotification('GET_QUOTE', quote_api_url);
+
+        payload = {
+            url: quote_api_url,
+            language: this.config.language
+        }
+
+        this.sendSocketNotification('GET_QUOTE', payload);
     },
 
     getDom: function() {
