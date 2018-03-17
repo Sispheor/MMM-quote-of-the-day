@@ -11,23 +11,24 @@ Module.register('MMM-quote-of-the-day', {
     start: function () {
 
         console.log("Starting module: " + this.name);
-        quote_api_url = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en"
 
+        // init the node helper
+        quote_api_url = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en"
         payload = {
             url: quote_api_url,
             language: this.config.language
         }
+        this.sendSocketNotification('INIT_HELPER', payload);
 
         // convert the updateInterval string into seconds
-        this.updateIntervalSeconds = this.getUpdateIntervalSecondFromString(this.config.updateInterval)
-        console.log("[MMM-quote-of-the-day] updateIntervalSeconds: " + this.updateIntervalSeconds)
+        this.updateIntervalMilliseconds = this.getUpdateIntervalMillisecondFromString(this.config.updateInterval)
+        // console.log("[MMM-quote-of-the-day] updateIntervalMillisecond: " + this.updateIntervalMilliseconds)
 
-        // this.sendSocketNotification('GET_QUOTE', payload);
+        this.getNewQuote();
+        this.scheduleUpdate();
     },
 
     getDom: function () {
-
-
         var wrapper = document.createElement("div");
         var quoteTextDiv = document.createElement("div");
         var quoteAuthorDiv = document.createElement("div");
@@ -43,30 +44,46 @@ Module.register('MMM-quote-of-the-day', {
             quoteAuthorDiv.innerHTML = "";
         }
 
-
         wrapper.appendChild(quoteTextDiv);
         wrapper.appendChild(quoteAuthorDiv);
         return wrapper;
 
     },
 
+    scheduleUpdate: function(delay) {
+        var nextLoad = this.updateIntervalMilliseconds;
+        if (typeof delay !== "undefined" && delay >= 0) {
+          nextLoad = delay;
+        }
+        console.log("[MMM-quote-of-the-day] Next update in " + this.updateIntervalMilliseconds + " milliseconds")
+        var self = this;
+
+        setInterval(function() {
+          self.getNewQuote();
+        }, nextLoad);
+      },
+
     socketNotificationReceived: function (notification, payload) {
         if (notification === "QUOTE_RESULT") {
             var self = this;
-            console.log("QUOTE_RESULT received with payload:" + payload)
             this.result = payload;
             this.updateDom();
         }
     },
 
-    /** return a number of second following the received intervalString
+    getNewQuote: function(){
+        this.sendSocketNotification('GET_QUOTE', payload);
+
+    },
+
+    /** return a number of millisecond following the received intervalString
      *  Interval string is composed by a number followed by a letter.
      *  E.g:
-     *      intervalString 1m will return 60
-     *      intervalString 10m will return 600
+     *      intervalString 1m will return 60000
+     *      intervalString 10m will return 600000
      * @param {string} intervalString - The interval to convert into second of the book.
     */
-    getUpdateIntervalSecondFromString: function(intervalString) {
+    getUpdateIntervalMillisecondFromString: function(intervalString) {
         // console.log("[MMM-quote-of-the-day] testing string: "+ intervalString)
         // the string must contains a number followed by a letter s or m or h or d. E.g: 50m
         var regexString = new RegExp("^\\d+[smhd]{1}$");
@@ -84,32 +101,45 @@ Module.register('MMM-quote-of-the-day', {
             // console.log("[MMM-quote-of-the-day] letter: '" + letter + "'");
 
             // convert the letter into second
-            var secondsMultiplier = 1
+            var millisecondsMultiplier = 1000
             switch (String(letter)) {
                 case "s":
-                    secondsMultiplier = 1
+                    millisecondsMultiplier = 1000
                     break;
                 case "m":
-                    secondsMultiplier = 60
+                    millisecondsMultiplier = 1000 * 60
                     break;
                 case "h":
-                    secondsMultiplier = 3600
+                    millisecondsMultiplier = 1000 * 60 * 60
                     break;
                 case "d":
-                    secondsMultiplier = 86400
+                    millisecondsMultiplier = 1000 * 60 * 60 * 24
                     break;
             }
 
             // convert the string into seconds
-            updateIntervalSecond = secondsMultiplier * integer
+            updateIntervalMillisecond = millisecondsMultiplier * integer
 
         }else{
             console.log("[MMM-quote-of-the-day] invalid updateInterval, set default to 1 day")
             // set default interval to 1 day
-            updateIntervalSecond = 86400
+            updateIntervalMillisecond = 1000 * 60 * 60 * 24
         }
 
-        return updateIntervalSecond
+        return updateIntervalMillisecond
+    },
+
+    notificationReceived: function(notification, payload, sender) {
+        if (sender) {
+            console.log("[MMM-quote-of-the-day] received a module notification: " + notification + " from sender: " + sender.name);
+            if (notification == "QUOTE-OF-THE-DAY"){
+                if (payload == "getNewQuote"){
+                    this.getNewQuote();
+                }
+            }
+        } else {
+            Log.log(this.name + " received a system notification: " + notification);
+        }
     }
 
 });

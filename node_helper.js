@@ -1,18 +1,23 @@
 const NodeHelper = require('node_helper');
 const request = require("request");
 const translate = require('google-translate-api');
+const bodyParser = require('body-parser');
 
 module.exports = NodeHelper.create({
-    start: function() {
+    start: function () {
         console.log(this.name + ' helper started');
+
+        this.handleApiRequest();
+
+        this.quoteConfig = {}
 
     },
 
-    getNewQuote: function(payload) {
+    getNewQuote: function () {
         var self = this;
 
-        self.url = payload.url
-        self.language = payload.language
+        self.url = this.quoteConfig.url
+        self.language = this.quoteConfig.language
 
         options = {
             url: self.url,
@@ -21,12 +26,17 @@ module.exports = NodeHelper.create({
         }
 
         request(options, function (error, response, body) {
-            if (error) { return console.log(error); };
-            console.log("Quote API call result: " + body);
+            if (error) {
+                return console.log(error);
+            };
+            strObject = JSON.stringify(body, null, 4);
+            console.log(strObject);
             self.returned_data = body;
 
-            if (self.language != "en"){
-                translate(self.returned_data.quoteText, {to: "fr"}).then(res => {
+            if (self.language != "en") {
+                translate(self.returned_data.quoteText, {
+                    to: "fr"
+                }).then(res => {
                     // console.log(res.text);
                     self.returned_data.quoteText = res.text;
                     self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
@@ -35,7 +45,7 @@ module.exports = NodeHelper.create({
                     console.error(err);
                     self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
                 });
-            }else{
+            } else {
                 // return the quote directly without translating it
                 self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
             }
@@ -43,12 +53,42 @@ module.exports = NodeHelper.create({
 
     },
 
-    socketNotificationReceived: function(notification, payload) {
+    socketNotificationReceived: function (notification, payload) {
         console.log(this.name + " received a socket notification: " + notification + " - Payload: " + payload);
+        if (notification === 'INIT_HELPER') {
+            this.quoteConfig = payload
+        }
+
         if (notification === 'GET_QUOTE') {
-            this.getNewQuote(payload);
+            this.getNewQuote();
         }
     },
+
+    handleApiRequest: function () {
+        this.expressApp.use(bodyParser.json()); // support json encoded bodies
+        this.expressApp.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
+        this.expressApp.post('/quote-of-the-day', (req, res) => {
+            if (req.body.notification && req.body.notification == "QUOTE-OF-THE-DAY"){
+                if (req.body.payload){
+                    payload = req.body.payload
+                    console.log("[MMM-quote-of-the-day] payload received: " + payload)
+
+                    if (payload == "getNewQuote") {
+                        this.getNewQuote();
+                        res.send({"status": "success"});
+                    }else{
+                        res.send({"status": "failed", "error": "non recognized payload"});
+                    }
+
+                }else{
+                    res.send({"status": "failed", "error": "No payload given."});
+                }
+            }else{
+                res.send({"status": "failed", "error": "No notification given."});
+            }
+        });
+    }
 
 
 });
