@@ -54,6 +54,7 @@ module.exports = NodeHelper.create({
     },
 
     socketNotificationReceived: function (notification, payload) {
+        let self = this;
         console.log(this.name + " received a socket notification: " + notification + " - Payload: " + payload);
         if (notification === 'INIT_HELPER') {
             this.quoteConfig = payload
