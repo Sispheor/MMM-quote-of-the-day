@@ -14,26 +14,26 @@ module.exports = NodeHelper.create({
     },
 
     getNewQuote: function () {
-        var self = this;
+        let self = this;
 
-        self.url = this.quoteConfig.url
-        self.language = this.quoteConfig.language
+        self.url = this.quoteConfig.url;
+        self.language = this.quoteConfig.language;
 
-        options = {
+        let options = {
             url: self.url,
             json: true,
             method: "GET"
-        }
+        };
 
         request(options, function (error, response, body) {
             if (error) {
                 return console.log(error);
-            };
-            strObject = JSON.stringify(body, null, 4);
+            }
+            let strObject = JSON.stringify(body, null, 4);
             console.log(strObject);
             self.returned_data = body;
 
-            if (self.language != "en") {
+            if (self.language !== "en") {
                 translate(self.returned_data.quoteText, {
                     to: "fr"
                 }).then(res => {
@@ -69,12 +69,12 @@ module.exports = NodeHelper.create({
         this.expressApp.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
         this.expressApp.post('/quote-of-the-day', (req, res) => {
-            if (req.body.notification && req.body.notification == "QUOTE-OF-THE-DAY"){
+            if (req.body.notification && req.body.notification === "QUOTE-OF-THE-DAY"){
                 if (req.body.payload){
-                    payload = req.body.payload
-                    console.log("[MMM-quote-of-the-day] payload received: " + payload)
+                    let payload = req.body.payload;
+                    console.log("[MMM-quote-of-the-day] payload received: " + payload);
 
-                    if (payload == "getNewQuote") {
+                    if (payload === "getNewQuote") {
                         this.getNewQuote();
                         res.send({"status": "success"});
                     }else{

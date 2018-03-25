@@ -13,15 +13,15 @@ Module.register('MMM-quote-of-the-day', {
         console.log("Starting module: " + this.name);
 
         // init the node helper
-        quote_api_url = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en"
-        payload = {
-            url: quote_api_url,
+        let quoteApiURL = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en";
+        let payload = {
+            url: quoteApiURL,
             language: this.config.language
-        }
+        };
         this.sendSocketNotification('INIT_HELPER', payload);
 
         // convert the updateInterval string into seconds
-        this.updateIntervalMilliseconds = this.getUpdateIntervalMillisecondFromString(this.config.updateInterval)
+        this.updateIntervalMilliseconds = this.getUpdateIntervalMillisecondFromString(this.config.updateInterval);
         // console.log("[MMM-quote-of-the-day] updateIntervalMillisecond: " + this.updateIntervalMilliseconds)
 
         this.getNewQuote();
@@ -29,9 +29,9 @@ Module.register('MMM-quote-of-the-day', {
     },
 
     getDom: function () {
-        var wrapper = document.createElement("div");
-        var quoteTextDiv = document.createElement("div");
-        var quoteAuthorDiv = document.createElement("div");
+        let wrapper = document.createElement("div");
+        let quoteTextDiv = document.createElement("div");
+        let quoteAuthorDiv = document.createElement("div");
 
         quoteTextDiv.className = "normal";
         quoteAuthorDiv.className = "small dimmed";
@@ -51,12 +51,12 @@ Module.register('MMM-quote-of-the-day', {
     },
 
     scheduleUpdate: function(delay) {
-        var nextLoad = this.updateIntervalMilliseconds;
+        let nextLoad = this.updateIntervalMilliseconds;
         if (typeof delay !== "undefined" && delay >= 0) {
           nextLoad = delay;
         }
-        console.log("[MMM-quote-of-the-day] Next update in " + this.updateIntervalMilliseconds + " milliseconds")
-        var self = this;
+        console.log("[MMM-quote-of-the-day] Next update in " + this.updateIntervalMilliseconds + " milliseconds");
+        let self = this;
 
         setInterval(function() {
           self.getNewQuote();
@@ -65,14 +65,14 @@ Module.register('MMM-quote-of-the-day', {
 
     socketNotificationReceived: function (notification, payload) {
         if (notification === "QUOTE_RESULT") {
-            var self = this;
+            // let self = this;
             this.result = payload;
             this.updateDom();
         }
     },
 
     getNewQuote: function(){
-        this.sendSocketNotification('GET_QUOTE', payload);
+        this.sendSocketNotification('GET_QUOTE');
 
     },
 
@@ -86,34 +86,35 @@ Module.register('MMM-quote-of-the-day', {
     getUpdateIntervalMillisecondFromString: function(intervalString) {
         // console.log("[MMM-quote-of-the-day] testing string: "+ intervalString)
         // the string must contains a number followed by a letter s or m or h or d. E.g: 50m
-        var regexString = new RegExp("^\\d+[smhd]{1}$");
+        let regexString = new RegExp("^\\d+[smhd]{1}$");
+        let updateIntervalMillisecond = 0;
 
         if (regexString.test(intervalString)){
-            console.log("[MMM-quote-of-the-day] valid updateInterval")
+            console.log("[MMM-quote-of-the-day] valid updateInterval");
             // split the integer from the letter
-            var regexInteger = "^\\d+";
-            var integer = intervalString.match(regexInteger);
+            let regexInteger = "^\\d+";
+            let integer = intervalString.match(regexInteger);
             // console.log("[MMM-quote-of-the-day] integer: " + integer);
 
             // now get the letter
-            var regexLetter = "[smhd]{1}$";
-            var letter = intervalString.match(regexLetter);
+            let regexLetter = "[smhd]{1}$";
+            let letter = intervalString.match(regexLetter);
             // console.log("[MMM-quote-of-the-day] letter: '" + letter + "'");
 
             // convert the letter into second
-            var millisecondsMultiplier = 1000
+            let millisecondsMultiplier = 1000;
             switch (String(letter)) {
                 case "s":
-                    millisecondsMultiplier = 1000
+                    millisecondsMultiplier = 1000;
                     break;
                 case "m":
-                    millisecondsMultiplier = 1000 * 60
+                    millisecondsMultiplier = 1000 * 60;
                     break;
                 case "h":
-                    millisecondsMultiplier = 1000 * 60 * 60
+                    millisecondsMultiplier = 1000 * 60 * 60;
                     break;
                 case "d":
-                    millisecondsMultiplier = 1000 * 60 * 60 * 24
+                    millisecondsMultiplier = 1000 * 60 * 60 * 24;
                     break;
             }
 
@@ -121,7 +122,7 @@ Module.register('MMM-quote-of-the-day', {
             updateIntervalMillisecond = millisecondsMultiplier * integer
 
         }else{
-            console.log("[MMM-quote-of-the-day] invalid updateInterval, set default to 1 day")
+            console.log("[MMM-quote-of-the-day] invalid updateInterval, set default to 1 day");
             // set default interval to 1 day
             updateIntervalMillisecond = 1000 * 60 * 60 * 24
         }
@@ -132,8 +133,8 @@ Module.register('MMM-quote-of-the-day', {
     notificationReceived: function(notification, payload, sender) {
         if (sender) {
             console.log("[MMM-quote-of-the-day] received a module notification: " + notification + " from sender: " + sender.name);
-            if (notification == "QUOTE-OF-THE-DAY"){
-                if (payload == "getNewQuote"){
+            if (notification === "QUOTE-OF-THE-DAY"){
+                if (payload === "getNewQuote"){
                     this.getNewQuote();
                 }
             }
