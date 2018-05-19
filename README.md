@@ -8,12 +8,6 @@ The quote is renewed following a configurable update interval.
 
 ![quote-of-the-day_english](images/quote-of-the-day_english_example.png)
 
-curl -H "Content-Type: application/json" -X POST -d '{"notification":"QUOTE-OF-THE-DAY", "payload": "getNewQuote"}' http://localhost:8080/kalliope
-
-
-curl -H "Content-Type: application/json" -X POST -d '{"notification":"QUOTE-OF-THE-DAY", "payload": "getNewQuote"}' http://localhost:8080/quote-of-the-day
-
-
 ## Installation
 
 Clone this repo into `~/MagicMirror/modules` directory. Then move in the folder and install required libraries
