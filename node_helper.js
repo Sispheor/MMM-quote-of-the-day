@@ -19,12 +19,6 @@ module.exports = NodeHelper.create({
         self.url = this.quoteConfig.url;
         self.language = this.quoteConfig.language;
 
-        let options = {
-            url: self.url,
-            json: true,
-            method: "GET"
-        };
-
         axios.get(self.url)
             .then(function (response) {
                 console.log(response);
