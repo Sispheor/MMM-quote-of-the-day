@@ -26,7 +26,7 @@ module.exports = NodeHelper.create({
 
                 if (self.language !== "en") {
                     translate(self.returned_data.quoteText, {
-                        to: "fr"
+                        to: self.language
                     }).then(res => {
                         // console.log(res.text);
                         self.returned_data.quoteText = res.text;
