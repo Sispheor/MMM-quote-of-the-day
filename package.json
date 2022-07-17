@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Sispheor/MMM-quote-of-the-day#readme",
   "dependencies": {
+    "axios": "^0.27.2",
     "google-translate-api": "^2.3.0"
   }
 }
