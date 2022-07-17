@@ -1,7 +1,7 @@
 const NodeHelper = require('node_helper');
-const request = require("request");
 const translate = require('google-translate-api');
 const bodyParser = require('body-parser');
+const axios = require('axios').default;
 
 module.exports = NodeHelper.create({
     start: function () {
@@ -25,31 +25,31 @@ module.exports = NodeHelper.create({
             method: "GET"
         };
 
-        request(options, function (error, response, body) {
-            if (error) {
-                return console.log(error);
-            }
-            let strObject = JSON.stringify(body, null, 4);
-            console.log(strObject);
-            self.returned_data = body;
+        axios.get(self.url)
+            .then(function (response) {
+                console.log(response);
+                self.returned_data = response.data;
 
-            if (self.language !== "en") {
-                translate(self.returned_data.quoteText, {
-                    to: "fr"
-                }).then(res => {
-                    // console.log(res.text);
-                    self.returned_data.quoteText = res.text;
+                if (self.language !== "en") {
+                    translate(self.returned_data.quoteText, {
+                        to: "fr"
+                    }).then(res => {
+                        // console.log(res.text);
+                        self.returned_data.quoteText = res.text;
+                        self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
+    
+                    }).catch(err => {
+                        console.error(err);
+                        self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
+                    });
+                } else {
+                    // return the quote directly without translating it
                     self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
-
-                }).catch(err => {
-                    console.error(err);
-                    self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
-                });
-            } else {
-                // return the quote directly without translating it
-                self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
-            }
-        });
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
 
     },
 
