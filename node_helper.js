@@ -21,14 +21,12 @@ module.exports = NodeHelper.create({
 
         axios.get(self.url)
             .then(function (response) {
-                console.log(response);
                 self.returned_data = response.data;
 
                 if (self.language !== "en") {
                     translate(self.returned_data.quoteText, {
                         to: self.language
                     }).then(res => {
-                        // console.log(res.text);
                         self.returned_data.quoteText = res.text;
                         self.sendSocketNotification('QUOTE_RESULT', self.returned_data);
     
@@ -48,7 +46,6 @@ module.exports = NodeHelper.create({
     },
 
     socketNotificationReceived: function (notification, payload) {
-        let self = this;
         console.log(this.name + " received a socket notification: " + notification + " - Payload: " + payload);
         if (notification === 'INIT_HELPER') {
             this.quoteConfig = payload
@@ -72,18 +69,17 @@ module.exports = NodeHelper.create({
                     if (payload === "getNewQuote") {
                         this.getNewQuote();
                         res.send({"status": "success"});
-                    }else{
+                    } else {
                         res.send({"status": "failed", "error": "non recognized payload"});
                     }
 
-                }else{
+                } else {
                     res.send({"status": "failed", "error": "No payload given."});
                 }
-            }else{
+            } else {
                 res.send({"status": "failed", "error": "No notification given."});
             }
         });
     }
-
 
 });

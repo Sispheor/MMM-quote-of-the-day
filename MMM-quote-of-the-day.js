@@ -37,9 +37,9 @@ Module.register('MMM-quote-of-the-day', {
         quoteAuthorDiv.className = "small dimmed";
 
         if (this.result.quoteText && this.result.quoteAuthor){
-            quoteTextDiv.innerHTML = this.result.quoteText;
-            quoteAuthorDiv.innerHTML = this.result.quoteAuthor;
-        }else{
+            quoteTextDiv.innerHTML = this.result.quoteText.trim();
+            quoteAuthorDiv.innerHTML = this.result.quoteAuthor.trim();
+        } else {
             quoteTextDiv.innerHTML = "Loading";
             quoteAuthorDiv.innerHTML = "";
         }
