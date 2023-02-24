@@ -13,7 +13,7 @@ Module.register('MMM-quote-of-the-day', {
         console.log("Starting module: " + this.name);
 
         // init the node helper
-        let quoteApiURL = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=en";
+        let quoteApiURL = "http://api.forismatic.com/api/1.0/?method=getQuote&format=json";
         let payload = {
             url: quoteApiURL,
             language: this.config.language

@@ -15,16 +15,21 @@ module.exports = NodeHelper.create({
 
     getNewQuote: function () {
         let self = this;
+        let needToTranslate = this.needToTranslate(this.quoteConfig.language);
 
         self.url = this.quoteConfig.url;
-        self.language = this.quoteConfig.language;
+        self.language = needToTranslate ? "en" : this.quoteConfig.language;
 
-        axios.get(self.url)
+        axios.get(self.url, {
+                params: {
+                    lang: self.language
+                }
+            })
             .then(function (response) {
                 console.log(response);
                 self.returned_data = response.data;
 
-                if (self.language !== "en") {
+                if (needToTranslate) {
                     translate(self.returned_data.quoteText, {
                         to: self.language
                     }).then(res => {
@@ -83,6 +88,10 @@ module.exports = NodeHelper.create({
                 res.send({"status": "failed", "error": "No notification given."});
             }
         });
+    },
+
+    needToTranslate: function(language) {
+            return !(language == "en" || language == "ru");
     }
 
 
